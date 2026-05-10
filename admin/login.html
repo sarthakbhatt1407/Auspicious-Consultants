@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Auspicious Consultants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f1117;
+            --surface: #1a1d27;
+            --border:  #2e3248;
+            --accent:  #6c63ff;
+            --accent2: #a78bfa;
+            --red:     #ef4444;
+            --text:    #e2e8f0;
+            --muted:   #8892b0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background blobs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: .12;
+            animation: drift 12s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+        body::before {
+            width: 500px; height: 500px;
+            background: var(--accent);
+            top: -100px; left: -100px;
+        }
+        body::after {
+            width: 400px; height: 400px;
+            background: var(--accent2);
+            bottom: -80px; right: -80px;
+            animation-delay: -6s;
+        }
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(40px, 30px) scale(1.1); }
+        }
+
+        /* Grid dots overlay */
+        .grid-bg {
+            position: fixed; inset: 0; pointer-events: none;
+            background-image:
+                radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+            z-index: 0;
+        }
+
+        /* Card */
+        .card {
+            position: relative; z-index: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px 44px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 32px 80px rgba(0,0,0,.4);
+            animation: slideUp .4s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo */
+        .logo {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 36px;
+        }
+        .logo-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: grid; place-items: center; font-size: 20px;
+            box-shadow: 0 8px 24px rgba(108,99,255,.35);
+        }
+        .logo-text h1 { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
+        .logo-text p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        .card-title {
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 6px;
+        }
+        .card-sub {
+            font-size: 13.5px; color: var(--muted); margin-bottom: 32px;
+        }
+
+        /* Fields */
+        .field { margin-bottom: 18px; }
+        .field label {
+            display: block; font-size: 12px; font-weight: 500;
+            color: var(--muted); margin-bottom: 7px; letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .input-wrap {
+            position: relative; display: flex; align-items: center;
+        }
+        .input-wrap i.prefix {
+            position: absolute; left: 14px; color: var(--muted); font-size: 14px;
+            pointer-events: none; transition: color .2s;
+        }
+        .input-wrap input {
+            width: 100%;
+            background: rgba(255,255,255,.04);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 14px 12px 42px;
+            border-radius: 10px;
+            font-family: inherit; font-size: 14px;
+            outline: none; transition: border-color .2s, box-shadow .2s;
+        }
+        .input-wrap input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108,99,255,.15);
+        }
+        .input-wrap input:focus + .prefix-placeholder,
+        .input-wrap:focus-within i.prefix { color: var(--accent); }
+
+        .toggle-pw {
+            position: absolute; right: 14px;
+            background: none; border: none; color: var(--muted);
+            cursor: pointer; font-size: 14px; padding: 4px;
+            transition: color .2s;
+        }
+        .toggle-pw:hover { color: var(--text); }
+
+        /* Error */
+        .error-box {
+            background: rgba(239,68,68,.1);
+            border: 1px solid rgba(239,68,68,.3);
+            border-radius: 10px; padding: 10px 14px;
+            font-size: 13px; color: var(--red);
+            display: none; align-items: center; gap: 8px;
+            margin-bottom: 18px;
+        }
+        .error-box.show { display: flex; }
+
+        /* Submit */
+        .btn-login {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff; border: none; border-radius: 10px;
+            font-family: inherit; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: opacity .2s, transform .15s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 8px 24px rgba(108,99,255,.3);
+            margin-top: 8px;
+        }
+        .btn-login:hover   { opacity: .9; transform: translateY(-1px); }
+        .btn-login:active  { transform: translateY(0); }
+        .btn-login:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .footer-note {
+            text-align: center; margin-top: 28px;
+            font-size: 12px; color: var(--muted);
+        }
+        .footer-note a { color: var(--accent2); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="card">
+
+    <!-- Logo -->
+    <div class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="logo-text">
+            <h1>Auspicious Consultants</h1>
+            <p>Admin Portal</p>
+        </div>
+    </div>
+
+    <h2 class="card-title">Welcome back 👋</h2>
+    <p class="card-sub">Sign in to access the admin dashboard.</p>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <span id="error-msg">Invalid credentials.</span>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" autocomplete="off">
+
+        <div class="field">
+            <label for="username">Username</label>
+            <div class="input-wrap">
+                <i class="prefix fa-solid fa-user"></i>
+                <input type="text" id="username" placeholder="Enter your username" required autocomplete="username">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+                <i class="prefix fa-solid fa-lock"></i>
+                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                <button type="button" class="toggle-pw" id="togglePw" tabindex="-1">
+                    <i class="fa-solid fa-eye" id="pw-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+            <span class="spinner" id="spinner"></span>
+            <span id="btn-text"><i class="fa-solid fa-right-to-bracket"></i> Sign In</span>
+        </button>
+    </form>
+
+    <div class="footer-note">
+        &copy; 2024 Auspicious Consultants &mdash; <a href="../index.html">Back to Website</a>
+    </div>
+</div>
+
+<script>
+    // Redirect if already logged in
+    (async () => {
+        try {
+            const res  = await fetch('../api/admin_auth.php');
+            const data = await res.json();
+            if (data.authenticated) window.location.replace('index.html');
+        } catch (_) {}
+    })();
+
+    // Password toggle
+    document.getElementById('togglePw').addEventListener('click', () => {
+        const pw   = document.getElementById('password');
+        const icon = document.getElementById('pw-icon');
+        if (pw.type === 'password') {
+            pw.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            pw.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    });
+
+    // Login submit
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const errBox  = document.getElementById('error-box');
+        const btn     = document.getElementById('loginBtn');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btn-text');
+
+        errBox.classList.remove('show');
+        btn.disabled     = true;
+        spinner.style.display = 'block';
+        btnText.style.display = 'none';
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        try {
+            const res  = await fetch('../api/admin_login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                btnText.innerHTML = '<i class="fa-solid fa-check"></i> Redirecting…';
+                btnText.style.display = 'block';
+                spinner.style.display = 'none';
+                setTimeout(() => window.location.replace('index.html'), 600);
+            } else {
+                document.getElementById('error-msg').textContent = data.message;
+                errBox.classList.add('show');
+                btn.disabled          = false;
+                spinner.style.display = 'none';
+                btnText.style.display = 'block';
+            }
+        } catch (_) {
+            document.getElementById('error-msg').textContent = 'Server error. Please try again.';
+            errBox.classList.add('show');
+            btn.disabled          = false;
+            spinner.style.display = 'none';
+            btnText.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
